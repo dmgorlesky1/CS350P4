@@ -36,7 +36,7 @@ public class Cache {
     /** Number of memory references */
     private int refer;
 
-    public Cache(String[][] info, String setSize, String numSet, String lineSize){
+    public Cache(String[][] info, String numSet, String setSize, String lineSize){
         this.setSize = setSize;
         this.numSet = numSet;
         this.lineSize = lineSize;
@@ -48,7 +48,7 @@ public class Cache {
         this.param = "";
     }
 
-    public Cache(String[][] info, String setSize, String numSet, String lineSize, String param){
+    public Cache(String[][] info, String numSet, String setSize, String lineSize, String param){
         this.setSize = setSize;
         this.numSet = numSet;
         this.lineSize = lineSize;
@@ -77,12 +77,13 @@ public class Cache {
         this.param = "F";
     }
 
+
     public void go(){
         String message = "";
-        conditionChecking();
        // getInfoLength();
         message = firstOutput();
         System.out.println(firstOutput());
+        message += doWork();
         message += printSummary();
         System.out.println(printSummary());
         if(param.equals("F")){
@@ -91,29 +92,6 @@ public class Cache {
         }
         //Do something with message
 
-    }
-
-    public void conditionChecking () {
-        String value = lineSize; //Making sure the line size isn't less than 4 bytes
-        int checking = Integer.parseInt(value);
-        if (checking < 4) {
-            System.out.println("Error: Line size is less than 4. Please retry.");
-            System.out.println("Usage: Driver <f|F>");
-            System.exit(1);
-        }
-
-        if (checking % 2 != 0) { //Making sure the line size is a power of 2
-            System.out.println("Error: Line size is not a power of two. Please retry.");
-            System.out.println("Usage: Driver <f|F>");
-            System.exit(1);
-        }
-
-        checking = Integer.parseInt(numSet);
-        if (checking % 2 != 0) {    //Making sure the number of sets is a power of 2
-            System.out.println("Error: Number of sets is not a power of two. Please retry.");
-            System.out.println("Usage: Driver <f|F>");
-            System.exit(1);
-        }
     }
 
     public void getInfoLength(){
@@ -136,6 +114,53 @@ public class Cache {
         val += "\nAccess Address   Tag   Index Offset Result Memrefs";
         val += "\n------ ------- ------- ----- ------ ------ -------\n";
         return val;
+    }
+
+    public String doWork(){
+        String data = "";
+        int maxSize = largestAddress();
+        int bin = 0;
+        int[] tag;
+        String access, address, binary, val, result, newTag, memRef = "";
+        for(int i = 0; i < infoLen - 1; i++){
+            access = accessName(info[i][1]);
+            data += " " + access;
+            address = info[i][0];
+            bin = Integer.parseInt(address, 16); //turn into int
+            binary = Integer. toBinaryString(bin);//int into binary string
+            data += " " + binary;
+            data += " " + info[i][0];
+            //Get tag
+
+            //Get index
+
+            //Get offset
+
+            //Get hit or miss
+
+            //Get mem reference
+        }
+        return data;
+    }
+
+    public String accessName(String value){
+        if(value.equalsIgnoreCase("R")){
+            return "read";
+        }
+        return "write";
+    }
+
+    public int largestAddress(){
+        int max = 0;
+        for(int i = 0; i < this.infoLen; i++){
+            if(this.info[i][0] != null){
+                int addLength = this.info[i][0].length() - 1;
+                if(addLength > max){
+                    max = addLength;
+                }
+            }
+        }
+        return max;
     }
 
     public String printSummary(){
