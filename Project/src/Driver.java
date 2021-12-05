@@ -18,7 +18,7 @@ public class Driver {
             }
         }
         Scanner scan = new Scanner(System.in);
-        String[][] infoArray = new String[8000][3];
+        String[][] infoArray = new String[5000][3];
         String[] array = new String[3];
 
         String fileName = scan.nextLine();
@@ -55,9 +55,9 @@ public class Driver {
             Cache cache = new Cache(infoArray, array[0], array[1], array[2]);
             /**Cache cache;
             if(cma.equals("")) {
-                cache = new Cache(info, setSize, numSets, lineSize);
+                cache = new Cache(infoArray, array[0], array[1], array[2]);
             } else {
-                cache = new Cache(info, setSize, numSets, lineSize, cma);
+                cache = new Cache(infoArray, array[0], array[1], array[2], cma);
             }*/
             cache.go();
         } catch (Exception e) {
@@ -97,7 +97,7 @@ public class Driver {
         String[] check = values[0].split(" ");
         String check2 = check[1];
         int checking = Integer.parseInt(check2);
-        if(checking > 8000){    //Making sure the number of sets isn't > 8000
+        if(checking > 5000){    //Making sure the number of sets isn't > 5000
             System.out.println("Number of sets exceeds 8,000");
             System.exit(1);
         }
