@@ -7,13 +7,13 @@ import java.util.*;
 public class Cache {
 
     /** Set Size */
-    private String setSize;
+    private final String setSize;
 
     /** number of sets */
-    private String numSet;
+    private final String numSet;
 
     /** line size */
-    private String lineSize;
+    private final String lineSize;
 
     /** num of hits */
     private int hit;
@@ -28,7 +28,7 @@ public class Cache {
     private int infoLen;
 
     /** Parameter of program */
-    private String param;
+    private final String param;
 
     /** Number of accesses */
     private int access;
@@ -91,7 +91,7 @@ public class Cache {
             System.out.println(finalState());
         }
         //Do something with message
-
+        //print message or write to file?????????????????????
     }
 
     public void getInfoLength(){
@@ -131,7 +131,7 @@ public class Cache {
             data += " " + binary;
             data += " " + info[i][0];
             //Get tag
-
+            tag = getTag(binary);
             //Get index
 
             //Get offset
@@ -141,6 +141,82 @@ public class Cache {
             //Get mem reference
         }
         return data;
+    }
+
+    public int[] getTag(String binary){
+        int[] values = new int[3];
+        int index = calcIndex(binary);
+        int offset = calcOffset(binary);
+        values[1] = index;
+        values[2] = offset;
+        //Get offset values
+        int indexBit = getIndex();   //Getting the bit amounts for index
+        int offsetBit = getOffset(); //Getting bit amount for offset
+        int min = 0;
+        int max = binary.length() - (indexBit + offsetBit);
+        String binaryValue = "";
+        //Grabbing the right bits for the tag
+        for(int i = 0; i < max; i++){
+            binaryValue += Character.toString(binary.charAt(min));
+            min++;
+        }
+        String padded = String.format("%0"+(8- binaryValue.length())+"d%s", 0, binaryValue);
+        values[0] = Integer.parseInt(padded, 2);//Padding and converting tag to int
+        return values;
+    }
+
+    public int calcIndex(String binary){
+        int indexBit = getIndex();  //how many bits are in index
+        int offsetBit = getOffset();//how many bits are in offset
+        String padded = addZeros(binary);   //pads the binary
+        String binaryValue = "";
+        int min = padded.length() - (indexBit + offsetBit);
+        for(int i = 0; i < indexBit; i++){
+            binaryValue += Character.toString(padded.charAt(min));
+            min++;
+        }
+        return Integer.parseInt(binaryValue, 2);
+    }
+
+    public String addZeros(String binary){
+        int max = largestBinary();
+        String zero = "0";
+        for(int i = 0; i < max + 1; i++){
+            if(binary.length() < max){
+                binary = zero + binary;
+            }
+        }
+        return binary;
+    }
+
+    public int getIndex(){
+        //splitting it up because it has a space before it
+        String[] check = this.numSet.split(" ");
+        String value = check[1];//getting the string value of teh index
+        int set = Integer.parseInt(value);
+        double index = Math.log(set)/Math.log(2);//Math ofr infex
+        return (int)index;
+    }
+
+    public int calcOffset(String binary){
+        int offsetBit = getOffset();
+        int length = binary.length() - offsetBit;
+        String binaryValue = "";
+        for(int i = 0; i < offsetBit; i++){
+            binaryValue += Character.toString(binary.charAt(length));
+            length++;//bits for offset in one string
+        }
+        String padded = String.format("%0"+(8-binaryValue.length())+"d%s",0,binaryValue);
+        return Integer.parseInt(padded, 2);
+    }
+
+    public int getOffset(){
+        String check[] = this.lineSize.split(" ");
+        //Splitting information properly
+        String value = check[1];
+        int size = Integer.parseInt(value);
+        double offset = Math.log(size)/Math.log(2); //Calculating the offset into double
+        return (int)offset;
     }
 
     public String accessName(String value){
@@ -157,6 +233,20 @@ public class Cache {
                 int addLength = this.info[i][0].length() - 1;
                 if(addLength > max){
                     max = addLength;
+                }
+            }
+        }
+        return max;
+    }
+
+    public int largestBinary(){
+        int max = 0;
+        for(int i = 0; i < infoLen; i++){
+            if(info[i][0] != null){
+                int bin = Integer.parseInt(info[i][0], 16);//String to int
+                String binary = Integer.toBinaryString(bin);    //Int to binary
+                if(binary.length() > max){
+                    max = binary.length();
                 }
             }
         }
