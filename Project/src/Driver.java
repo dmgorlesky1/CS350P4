@@ -94,6 +94,7 @@ public class Driver {
         } catch (Exception e) {
             //ADD MESSAGE HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             scan.close();
+            e.printStackTrace();
             System.out.println(e.getMessage());
             System.exit(1);
         }
@@ -132,13 +133,6 @@ public class Driver {
             System.out.println("Number of sets exceeds 8,000");
             System.exit(1);
         }
-        check = values[1].split(" ");
-        check2 = check[1];
-        checking = Integer.parseInt(check2);
-        if(checking > 8){   //Making sure the set size isn't above 8
-            System.out.println("Associativity level exceeds 8!");
-            System.exit(1);
-        }
         check = values[2].split(" ");
         check2 = check[1]; //Making sure the line size isn't less than 4 bytes
         checking = Integer.parseInt(check2);
@@ -150,8 +144,10 @@ public class Driver {
         check2 = check[1];
         checking = Integer.parseInt(check2);
         if(checking%2 != 0){    //Making sure the number of sets is a power of 2
-            System.out.println("Number of sets is not a power of two!");
-            System.exit(1);
+            if(checking != 1) {
+                System.out.println("Number of sets is not a power of two!");
+                System.exit(1);
+            }
         }
         check = values[2].split(" ");
         check2 = check[1];
@@ -160,7 +156,14 @@ public class Driver {
             System.out.println("Line size is not a power of two!");
             System.exit(1);
         }
+    }
 
+    static boolean isPowerOfTwo(int n)
+    {
+        if(n==0)
+            return false;
 
+        return (int)(Math.ceil((Math.log(n) / Math.log(2)))) ==
+                (int)(Math.floor(((Math.log(n) / Math.log(2)))));
     }
 }

@@ -43,9 +43,9 @@ public class Cache {
     public String[] usedAddress = new String[10000];
 
     public Cache(String[][] info, String numSet, String setSize, String lineSize){
-        this.setSize = setSize;
-        this.numSet = numSet;
-        this.lineSize = lineSize;
+        this.numSet = numSet.replaceAll("\\s", "");
+        this.setSize = setSize.replaceAll("\\s", "");
+        this.lineSize = lineSize.replaceAll("\\s", "");
         this.info = info;
         this.hit = 0;
         this.miss = 0;
@@ -55,9 +55,9 @@ public class Cache {
     }
 
     public Cache(String[][] info, String numSet, String setSize, String lineSize, String param){
-        this.setSize = setSize;
-        this.numSet = numSet;
-        this.lineSize = lineSize;
+        this.setSize = setSize.replaceAll("\\s", "");
+        this.numSet = numSet.replaceAll("\\s", "");
+        this.lineSize = lineSize.replaceAll("\\s", "");
         this.info = info;
         this.hit = 0;
         this.miss = 0;
@@ -73,9 +73,9 @@ public class Cache {
      * @param lineSize
      */
     public Cache(String setSize, String numSet, String lineSize){
-        this.setSize = setSize;
-        this.numSet = numSet;
-        this.lineSize = lineSize;
+        this.setSize = setSize.replaceAll("\\s", "");
+        this.numSet = numSet.replaceAll("\\s", "");
+        this.lineSize = lineSize.replaceAll("\\s", "");
         this.hit = 0;
         this.miss = 0;
         this.refer = 0;
@@ -100,13 +100,6 @@ public class Cache {
         //print message or write to file?????????????????????
     }
 
-    public String getCache(){
-        String cache = "";
-        cache += "\t\t" + "2-way" + " entries\n";
-        cache += "\t\t" + setSize + " sets total\n";
-        cache += "\t\t" + "8 words per set\n";
-        return cache;
-    }
 
     public void getInfoLength(){
         int cnt = 1;
@@ -119,16 +112,6 @@ public class Cache {
     }
 
 
-    public String firstOutput(String cache){
-        String val = "Cache Configuration\n\n";
-        //CHANGE NEXT 3 LINES TO BE CACHE, IF ITS SET ASSOC OR DIRECT MAPPED
-        val += cache;
-        val += "\nResults for Each Reference\n";
-        val += "\nAccess Address   Tag   Index Offset Result Memrefs";
-        val += "\n------ ------- ------- ----- ------ ------ -------";
-        return val;
-    }
-
     public String doWork(){
         String data = "";
         int bin = 0;
@@ -137,26 +120,26 @@ public class Cache {
         String access, address, binary, value, result, newTag, memRef = "";
         for(int i = 0; i < infoLen - 1; i++){
             access = accessName(info[i][1]);
-            lineVal[0] = " " + access;
+            lineVal[0] = " " + access;//Access
             address = info[i][0];
             bin = Integer.parseInt(address, 16); //turn into int
             binary = Integer. toBinaryString(bin);//int into binary string
-            lineVal[1] = " " + info[i][0];
+            lineVal[1] = " " + info[i][0]; //Address
             //Get tag
             tag = getTag(binary);
-            lineVal[2] = tag[0] + "";
-            lineVal[3] = " " + tag[0];
+            lineVal[2] = tag[0] + "";//Tag
+            //lineVal[3] = " " + tag[0];
             //Get index
-            lineVal[4] = getIndexLength(tag[1]);
+            lineVal[3] = getIndexLength(tag[1]);
             //Get offset
-            lineVal[5] = getOffsetLength(tag[2]);
+            lineVal[4] = getOffsetLength(tag[2]);
             //Get hit or miss
             result = getHitorMiss(info[i][0]);
-            lineVal[6] = result;
+            lineVal[5] = result;
             //Get mem reference
             newTag = "" + tag[0];
             memRef = getMemRef(result, newTag);
-            lineVal[7] = "       " + memRef + "\n";
+            lineVal[6] = "       " + memRef;
             data += buildLine(lineVal);
         }
         System.out.println(data);
@@ -195,6 +178,9 @@ public class Cache {
             binaryValue += Character.toString(padded.charAt(min));
             min++;
         }
+        if(indexBit == 0){
+            return 0;
+        }
         return Integer.parseInt(binaryValue, 2);
     }
 
@@ -226,11 +212,8 @@ public class Cache {
     }
 
     public int getIndex(){
-        //splitting it up because it has a space before it
-        String[] check = this.numSet.split(" ");
-        String value = check[1];//getting the string value of teh index
-        int set = Integer.parseInt(value);
-        double index = Math.log(set)/Math.log(2);//Math ofr infex
+        int set = Integer.parseInt(numSet);
+        double index = Math.log(set)/Math.log(2);//Math for index
         return (int)index;
     }
 
@@ -247,10 +230,7 @@ public class Cache {
     }
 
     public int getOffset(){
-        String check[] = this.lineSize.split(" ");
-        //Splitting information properly
-        String value = check[1];
-        int size = Integer.parseInt(value);
+        int size = Integer.parseInt(lineSize);
         double offset = Math.log(size)/Math.log(2); //Calculating the offset into double
         return (int)offset;
     }
@@ -369,6 +349,27 @@ public class Cache {
 
     public static String padRight(String s, int n) {
         return String.format("%-" + n + "s", s).replace(' ', '0');
+    }
+
+    public String firstOutput(String cache){
+        String val = "Cache Configuration\n\n";
+        val += cache;
+        val += "\nResults for Each Reference\n";
+        val += "\nAccess Address   Tag   Index Offset Result Memrefs";
+        val += "\n------ ------- ------- ----- ------ ------ -------";
+        return val;
+    }
+
+    public String getCache(){
+        String cache = "";
+        int words = Integer.parseInt(lineSize)/4;
+        cache += "\t\t" + setSize + "-way set associative entries\n";
+        cache += "\t\t" + numSet + " sets total\n";
+        cache += "\t\t" + words + " words per set\n";
+        if(setSize.equals("1")){
+            cache += "\n\t\tDIRECT MAPPED CACHE\n";
+        }
+        return cache;
     }
 
     public String printSummary(){
