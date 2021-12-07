@@ -1,4 +1,5 @@
 import java.io.*;
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -184,9 +185,9 @@ public class Cache {
     }
 
     public String addZeros(String binary){
-        int max = largestBinary();
+        int max = Integer.parseInt(lineSize);
         String zero = "0";
-        for(int i = 0; i < max + 1; i++){
+        for(int i = 0; i < max; i++){
             if(binary.length() < max){
                 binary = zero + binary;
             }
@@ -305,21 +306,6 @@ public class Cache {
         }
     }
 
-
-    public int largestBinary(){
-        int max = 0;
-        for(int i = 0; i < infoLen; i++){
-            if(info[i][0] != null){
-                int bin = Integer.parseInt(info[i][0], 16);//String to int
-                String binary = Integer.toBinaryString(bin);    //Int to binary
-                if(binary.length() > max){
-                    max = binary.length();
-                }
-            }
-        }
-        return max;
-    }
-
     public String buildLine(String[] lineVal){
         String line = padLeft(lineVal[0], 6);//Access
         line += padLeft(lineVal[1], 8);//Address
@@ -364,15 +350,33 @@ public class Cache {
     public String printSummary(){
         String val = "\nSimulation Summary Statistics\n";
         int total = hit+miss;
+        String hitRatio2 = "", missRatio2 = "";
         float hitRatio = (float) hit/total;
+        DecimalFormat df = new DecimalFormat("#.000000");
+        String valueString = hitRatio+"";
+        int count = valueString.length();
+        if(count > 6){
+            hitRatio2 = df.format(hitRatio);
+            hitRatio2 = "0" + hitRatio2;
+        } else {
+            hitRatio2 = padRight(hitRatio2, 8);
+        }
         float missRatio = (float) 1 - hitRatio;
+        valueString = missRatio+"";
+        count = valueString.length();
+        if(count > 6){
+            missRatio2 = df.format(missRatio);
+            missRatio2 = "0" + missRatio2;
+        } else {
+            missRatio2 = padRight(missRatio2, 8);
+        }
         val += "---------------------------------";
         val += "\nTotal hits                     : " + this.hit;
         val += "\nTotal misses                   : " + this.miss;
         val += "\nTotal accesses                 : " + (hit+miss);
         val += "\nTotal memory references        : " + refer;
-        val += "\nHit ratio                      : " + padRight(hitRatio + "", 8);
-        val += "\nMiss ratio                     : " + padRight(missRatio + "", 8);
+        val += "\nHit ratio                      : " + hitRatio2;
+        val += "\nMiss ratio                     : " + missRatio;
         return val;
     }
 
