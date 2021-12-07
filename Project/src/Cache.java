@@ -34,11 +34,12 @@ public class Cache {
     private int access;
 
     /** Number of memory references */
-    private int refer;
+    private int refer = 0;
 
     /** Array to see if value was read or write */
     private String[] memLocations = new String[5000];
 
+    /** String array to hold any used addresses */
     public String[] usedAddress = new String[10000];
 
     public Cache(String[][] info, String numSet, String setSize, String lineSize){
@@ -273,6 +274,7 @@ public class Cache {
         if(value.equalsIgnoreCase("R")){
             return "read";
         }
+        refer++;
         return "write";
     }
 
@@ -290,6 +292,7 @@ public class Cache {
             }
         }
         miss++;
+        refer++;
         //storing tag into access
         memLocations[a] = tag;
         return val;

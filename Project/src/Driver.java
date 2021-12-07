@@ -18,7 +18,6 @@ public class Driver {
             }
         }
         Scanner scan = new Scanner(System.in);*/
-       // String file = args[0];
         String[][] infoArray = new String[5000][3];
         String[] array = new String[3];
 
@@ -43,6 +42,7 @@ public class Driver {
 
         //while(scan.hasNext()){
         int m = 0;
+        //TEST IF EACH REF ADDRESS IS PROPERLY ALIGNED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         while(scan.hasNextLine()){
             if(m == 0){
                 data2 = scan.nextLine();
@@ -62,15 +62,22 @@ public class Driver {
                 //String data = scan.next();
                 String data = scan.nextLine();
                 String[] split = data.split(":");
+                if (!split[1].equalsIgnoreCase("r") &&
+                        !split[1].equalsIgnoreCase("w")) {
+                    //Not a valid input
+                    System.out.println("\nWARNING: Improper memory access '" +
+                            data + "'. Skipping...\n");
+                } else {
 
-                for (int j = 0; j < split.length; j++) {
-                    innerArray[j] = split[j];   //Making inner array
-                }
+                    for (int j = 0; j < split.length; j++) {
+                        innerArray[j] = split[j];   //Making inner array
+                    }
 
-                for (int a = 0; a < innerArray.length; a++) {
-                    infoArray[i][a] = innerArray[a];    //put into infoArray
+                    for (int a = 0; a < innerArray.length; a++) {
+                        infoArray[i][a] = innerArray[a];    //put into infoArray
+                    }
+                    i++;
                 }
-                i++;
             }
             m++;
         }
@@ -153,6 +160,7 @@ public class Driver {
             System.out.println("Line size is not a power of two!");
             System.exit(1);
         }
-        return;
+
+
     }
 }
