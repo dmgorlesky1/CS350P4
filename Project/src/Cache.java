@@ -36,6 +36,11 @@ public class Cache {
     /** Number of memory references */
     private int refer;
 
+    /** Array to see if value was read or write */
+    private String[] memLocations = new String[5000];
+
+    public String[] usedAddress = new String[10000];
+
     public Cache(String[][] info, String numSet, String setSize, String lineSize){
         this.setSize = setSize;
         this.numSet = numSet;
@@ -80,9 +85,9 @@ public class Cache {
 
     public void go(){
         String message = "";
-       // getInfoLength();
-        message = firstOutput();
-        System.out.println(firstOutput());
+        getInfoLength();
+        message = firstOutput(getCache());
+        System.out.println(firstOutput(getCache()));
         message += doWork();
         message += printSummary();
         System.out.println(printSummary());
@@ -94,52 +99,66 @@ public class Cache {
         //print message or write to file?????????????????????
     }
 
+    public String getCache(){
+        String cache = "";
+        cache += "\t\t" + "2-way" + " entries\n";
+        cache += "\t\t" + setSize + " sets total\n";
+        cache += "\t\t" + "8 words per set\n";
+        return cache;
+    }
+
     public void getInfoLength(){
         int cnt = 1;
-        for(int i = 0; i < this.info.length; i++){
-            if(this.info[i][0] != null){
+        for(int i = 0; i < info.length; i++){
+            if(info[i][0] != null){
                 cnt++;
             }
         }
-        this.infoLen = cnt;
+        infoLen = cnt;
     }
 
 
-    public String firstOutput(){
+    public String firstOutput(String cache){
         String val = "Cache Configuration\n\n";
-        val += "\t\t" + "2-way" + " entries\n";
-        val += "\t\t" + setSize + " sets total\n";
-        val += "\t\t" + "8 words per set\n";
-        val += "\n\nResults for Each Reference\n";
+        //CHANGE NEXT 3 LINES TO BE CACHE, IF ITS SET ASSOC OR DIRECT MAPPED
+        val += cache;
+        val += "\nResults for Each Reference\n";
         val += "\nAccess Address   Tag   Index Offset Result Memrefs";
-        val += "\n------ ------- ------- ----- ------ ------ -------\n";
+        val += "\n------ ------- ------- ----- ------ ------ -------";
         return val;
     }
 
     public String doWork(){
         String data = "";
-        int maxSize = largestAddress();
         int bin = 0;
         int[] tag;
-        String access, address, binary, val, result, newTag, memRef = "";
+        String[] lineVal = new String[8];
+        String access, address, binary, value, result, newTag, memRef = "";
         for(int i = 0; i < infoLen - 1; i++){
             access = accessName(info[i][1]);
-            data += " " + access;
+            lineVal[0] = " " + access;
             address = info[i][0];
             bin = Integer.parseInt(address, 16); //turn into int
             binary = Integer. toBinaryString(bin);//int into binary string
-            data += " " + binary;
-            data += " " + info[i][0];
+            lineVal[1] = " " + info[i][0];
             //Get tag
             tag = getTag(binary);
+            lineVal[2] = tag[0] + "";
+            lineVal[3] = " " + tag[0];
             //Get index
-
+            lineVal[4] = getIndexLength(tag[1]);
             //Get offset
-
+            lineVal[5] = getOffsetLength(tag[2]);
             //Get hit or miss
-
+            result = getHitorMiss(info[i][0]);
+            lineVal[6] = result;
             //Get mem reference
+            newTag = "" + tag[0];
+            memRef = getMemRef(result, newTag);
+            lineVal[7] = "       " + memRef + "\n";
+            data += buildLine(lineVal);
         }
+        System.out.println(data);
         return data;
     }
 
@@ -176,6 +195,22 @@ public class Cache {
             min++;
         }
         return Integer.parseInt(binaryValue, 2);
+    }
+
+    public String getIndexLength(int index){
+        String val = " ";
+        int maxSpace = 5;
+        //if index is max characters length
+        if(index == maxSpace){
+            return "";
+        }
+        String dumb = index + "";
+        int left = maxSpace - dumb.length();
+        for(int i = 0; i < left; i++){
+            val +=" ";    //Adding spaces to output
+        }
+        val += index;
+        return val;
     }
 
     public String addZeros(String binary){
@@ -219,6 +254,21 @@ public class Cache {
         return (int)offset;
     }
 
+    public String getOffsetLength(int offset){
+        String val = " ";
+        int maxSpace = 5;
+        //if offset is the max length
+        if(offset == maxSpace){
+            return "";
+        }
+        int left = maxSpace - offset;
+        for(int i = 0; i < left; i++){
+            val += " ";   //adding spaces
+        }
+        val += offset;
+        return val;
+    }
+
     public String accessName(String value){
         if(value.equalsIgnoreCase("R")){
             return "read";
@@ -226,18 +276,63 @@ public class Cache {
         return "write";
     }
 
-    public int largestAddress(){
-        int max = 0;
-        for(int i = 0; i < this.infoLen; i++){
-            if(this.info[i][0] != null){
-                int addLength = this.info[i][0].length() - 1;
-                if(addLength > max){
-                    max = addLength;
+    public String getHitorMiss(String tag){
+        String val = "MISS";
+        int a = 0;
+        for(int i = 0; i < memLocations.length; i++){
+            if(memLocations[i] != null){
+                if(memLocations[i].equals(tag)){
+                    val = "HIT";//changing result
+                    this.hit++;
+                    return val;
+                }
+                a++;
+            }
+        }
+        miss++;
+        //storing tag into access
+        memLocations[a] = tag;
+        return val;
+    }
+
+    public String getMemRef(String result, String tag){
+        String val = "1";
+        if(result.equalsIgnoreCase("hit")){
+            val = "0";
+        }
+        if(accessedBefore(tag)){
+            val = "2";
+        }
+        return val;
+    }
+
+    public boolean accessedBefore(String tag){
+        boolean val = false;
+        int cnt = 0;
+        for(int i = 0; i < usedAddress.length; i++){
+            if(cnt == 2){
+                val = true;
+                deleteAddress(tag);
+            }
+            if(usedAddress[i] != null){
+                if(usedAddress[i].equals(tag)){
+                    cnt++;
                 }
             }
         }
-        return max;
+        return val;
     }
+
+    public void deleteAddress(String tag){
+        for(int i = 0; i < usedAddress.length; i++){
+            if(usedAddress[i] != null){
+                if(usedAddress[i].equals(tag)){
+                    usedAddress[i] = null;
+                }
+            }
+        }
+    }
+
 
     public int largestBinary(){
         int max = 0;
@@ -253,15 +348,38 @@ public class Cache {
         return max;
     }
 
+    public String buildLine(String[] lineVal){
+        String line = padLeft(lineVal[0], 6);//Access
+        line += padLeft(lineVal[1], 8);//Address
+        line += padLeft(lineVal[2], 8);//Tag
+        line += padLeft(lineVal[3], 6);//Index
+        line += padLeft(lineVal[4], 7);//Offset
+        line += padLeft(lineVal[5], 7);//Result
+        line += padLeft(lineVal[6], 8);//Memref
+        line += "\n";
+        return line;
+    }
+
+    public static String padLeft(String s, int n) {
+        return String.format("%" + n + "s", s);
+    }
+
+    public static String padRight(String s, int n) {
+        return String.format("%-" + n + "s", s).replace(' ', '0');
+    }
+
     public String printSummary(){
         String val = "\nSimulation Summary Statistics\n";
+        int total = hit+miss;
+        float hitRatio = (float) hit/total;
+        float missRatio = (float) 1 - hitRatio;
         val += "---------------------------------\n";
-        val += "Total hits                   : " + this.hit;
-        val += "\nTotal misses                 : " + this.miss;
-        val += "\nTotal accesses               : " + access;
-        val += "\nTotal memory references      : " + refer;
-        val += "\nHit ratio                    : " + (hit/access);
-        val += "\nMiss ratio                   : " + (1-miss);
+        val += "Total hits                     : " + this.hit;
+        val += "\nTotal misses                   : " + this.miss;
+        val += "\nTotal accesses                 : " + (hit+miss);
+        val += "\nTotal memory references        : " + refer;
+        val += "\nHit ratio                      : " + padRight(hitRatio + "", 8);
+        val += "\nMiss ratio                     : " + padRight(missRatio + "", 8);
         return val;
     }
 

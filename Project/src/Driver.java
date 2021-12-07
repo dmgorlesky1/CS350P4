@@ -9,46 +9,70 @@ public class Driver {
      *
      * @param args command line arguments
      */
-    public static void main (String[] args) {
+    public static void main (String[] args) throws IOException {
         //Checking if CMA is present & equals F
-        String cma = "";
+        /**String cma = "";
         if(args.length  > 0){
             if(args[0].equalsIgnoreCase("F")){
                 cma = "F";
             }
         }
-        Scanner scan = new Scanner(System.in);
+        Scanner scan = new Scanner(System.in);*/
+       // String file = args[0];
         String[][] infoArray = new String[5000][3];
         String[] array = new String[3];
 
-        String fileName = scan.nextLine();
-        String[] returned = fileName.split(":");
+        File file = new File(args[0]);
+        Scanner scan = new Scanner(file);
+        //String fileName = scan.nextLine();
+        //String[] returned = fileName.split(":");
 
-        array[0] = returned[1]; //number of sets
-        fileName = scan.nextLine();
+        //array[0] = returned[1]; //number of sets
+        //fileName = scan.nextLine();
 
-        returned = fileName.split(":");
-        array[1] = returned[1]; //set size
+        //returned = fileName.split(":");
+        //array[1] = returned[1]; //set size
 
-        fileName = scan.nextLine();
-        returned = fileName.split(":");
-        array[2] = returned[1]; //line size
-
-        conditionChecking(array);
+        //fileName = scan.nextLine();
+        //returned = fileName.split(":");
+        //array[2] = returned[1]; //line size
+        String data2 = "";
+        //conditionChecking(array);
         int i = 0;
-        while(scan.hasNext()){
-            String[] innerArray = new String[3];
-            String data = scan.next();
-            String[] split = data.split(":");
+        String[] returned;
 
-            for(int j = 0; j < split.length; j++){
-                innerArray[j] = split[j];   //Making inner array
-            }
+        //while(scan.hasNext()){
+        int m = 0;
+        while(scan.hasNextLine()){
+            if(m == 0){
+                data2 = scan.nextLine();
+                returned = data2.split(":");
+                array[0] = returned[1];
+            } else if(m == 1){
+                data2 = scan.nextLine();
+                returned = data2.split(":");
+                array[1] = returned[1];
+            } else if(m == 2){
+                data2 = scan.nextLine();
+                returned = data2.split(":");
+                array[2] = returned[1];
+                conditionChecking(array);
+            } else {
+                String[] innerArray = new String[3];
+                //String data = scan.next();
+                String data = scan.nextLine();
+                String[] split = data.split(":");
 
-            for(int a = 0; a < innerArray.length; a++){
-                infoArray[i][a] = innerArray[a];    //put into infoArray
+                for (int j = 0; j < split.length; j++) {
+                    innerArray[j] = split[j];   //Making inner array
+                }
+
+                for (int a = 0; a < innerArray.length; a++) {
+                    infoArray[i][a] = innerArray[a];    //put into infoArray
+                }
+                i++;
             }
-            i++;
+            m++;
         }
         try {
             //Used for print testing
