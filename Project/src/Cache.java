@@ -37,7 +37,7 @@ public class Cache {
     private int refer = 0;
 
     /** Array to see if value was read or write */
-    private String[] memLocations = new String[5000];
+    private String[][] memLocations = new String[5000][5000];
 
     /** String array to hold any used addresses */
     public String[] usedAddress = new String[10000];
@@ -63,26 +63,8 @@ public class Cache {
         this.miss = 0;
         this.refer = 0;
         this.access = 0;
-        this.param = param;
-    }
-
-    /**
-     * Constructor just used for testing!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     * @param setSize
-     * @param numSet
-     * @param lineSize
-     */
-    public Cache(String setSize, String numSet, String lineSize){
-        this.setSize = setSize.replaceAll("\\s", "");
-        this.numSet = numSet.replaceAll("\\s", "");
-        this.lineSize = lineSize.replaceAll("\\s", "");
-        this.hit = 0;
-        this.miss = 0;
-        this.refer = 0;
-        this.access = 1;
         this.param = "F";
     }
-
 
     public void go(){
         String message = "";
@@ -115,9 +97,10 @@ public class Cache {
     public String doWork(){
         String data = "";
         int bin = 0;
+        String index = "";
         int[] tag;
         String[] lineVal = new String[8];
-        String access, address, binary, value, result, newTag, memRef = "";
+        String access, address, binary, result, newTag, memRef = "";
         for(int i = 0; i < infoLen - 1; i++){
             access = accessName(info[i][1]);
             lineVal[0] = " " + access;//Access
@@ -129,12 +112,13 @@ public class Cache {
             tag = getTag(binary);
             lineVal[2] = tag[0] + "";//Tag
             //Get index
-            lineVal[3] = getIndexLength(tag[1]);
+            lineVal[3] = getIndexLength(tag[1]);//Index
+            index = getIndexLength(tag[1]);//Index
             //Get offset
-            lineVal[4] = getOffsetLength(tag[2]);
+            lineVal[4] = getOffsetLength(tag[2]);//Offset
             //Get hit or miss
-            result = getHitorMiss(info[i][0]);
-            lineVal[5] = result;
+            result = getHitorMiss(tag[0]+"", index);
+            lineVal[5] = result; //Result
             //Get mem reference
             newTag = "" + tag[0];
             memRef = getMemRef(result, newTag);
@@ -169,6 +153,9 @@ public class Cache {
 
     public int calcIndex(String binary){
         int indexBit = getIndex();  //how many bits are in index
+        if(indexBit == 0){
+            return 0;
+        }
         int offsetBit = getOffset();//how many bits are in offset
         String padded = addZeros(binary);   //pads the binary
         String binaryValue = "";
@@ -176,9 +163,6 @@ public class Cache {
         for(int i = 0; i < indexBit; i++){
             binaryValue += Character.toString(padded.charAt(min));
             min++;
-        }
-        if(indexBit == 0){
-            return 0;
         }
         return Integer.parseInt(binaryValue, 2);
     }
@@ -188,7 +172,7 @@ public class Cache {
         int maxSpace = 5;
         //if index is max characters length
         if(index == maxSpace){
-            return "";
+            return "5";
         }
         String dumb = index + "";
         int left = maxSpace - dumb.length();
@@ -239,7 +223,7 @@ public class Cache {
         int maxSpace = 5;
         //if offset is the max length
         if(offset == maxSpace){
-            return "";
+            return "5";
         }
         int left = maxSpace - offset;
         for(int i = 0; i < left; i++){
@@ -253,27 +237,33 @@ public class Cache {
         if(value.equalsIgnoreCase("R")){
             return "read";
         }
-        refer++;
         return "write";
     }
 
-    public String getHitorMiss(String tag){
+    public String getHitorMiss(String tag, String index){
+        index = index.replaceAll("\\s", "");
+        /**System.out.println("Tag: " + tag);
+        System.out.println("Index: " + index);
+        System.out.println("----------");*/
         String val = "MISS";
         int a = 0;
         for(int i = 0; i < memLocations.length; i++){
-            if(memLocations[i] != null){
-                if(memLocations[i].equals(tag)){
-                    val = "HIT";//changing result
-                    this.hit++;
-                    return val;
+            if(memLocations[i][0] != null){
+                if(memLocations[i][0].equals(tag)){
+                    if(memLocations[i][1].equals(index)) {
+                        val = "HIT";//changing result
+                        hit++;
+                        return val;
+                    }
                 }
                 a++;
             }
         }
         miss++;
-        refer++;
         //storing tag into memory locations
-        memLocations[a] = tag;
+        memLocations[a][0] = tag;
+        //storing index into memory locations
+        memLocations[a][1] = index;
         return val;
     }
 

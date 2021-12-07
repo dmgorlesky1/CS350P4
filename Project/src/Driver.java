@@ -13,9 +13,9 @@ public class Driver {
         //Checking if CMA is present & equals F
         /**String cma = "";
          if(args.length  > 0){
-         if(args[0].equalsIgnoreCase("F")){
-         cma = "F";
-         }
+            if(args[0].equalsIgnoreCase("F")){
+                cma = "F";
+            }
          }
          Scanner scan = new Scanner(System.in);*/
         String[][] infoArray = new String[5000][3];
