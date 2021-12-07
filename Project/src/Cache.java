@@ -128,7 +128,6 @@ public class Cache {
             //Get tag
             tag = getTag(binary);
             lineVal[2] = tag[0] + "";//Tag
-            //lineVal[3] = " " + tag[0];
             //Get index
             lineVal[3] = getIndexLength(tag[1]);
             //Get offset
@@ -377,8 +376,8 @@ public class Cache {
         int total = hit+miss;
         float hitRatio = (float) hit/total;
         float missRatio = (float) 1 - hitRatio;
-        val += "---------------------------------\n";
-        val += "Total hits                     : " + this.hit;
+        val += "---------------------------------";
+        val += "\nTotal hits                     : " + this.hit;
         val += "\nTotal misses                   : " + this.miss;
         val += "\nTotal accesses                 : " + (hit+miss);
         val += "\nTotal memory references        : " + refer;
