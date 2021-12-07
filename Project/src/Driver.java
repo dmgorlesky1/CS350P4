@@ -12,12 +12,12 @@ public class Driver {
     public static void main (String[] args) throws IOException {
         //Checking if CMA is present & equals F
         /**String cma = "";
-        if(args.length  > 0){
-            if(args[0].equalsIgnoreCase("F")){
-                cma = "F";
-            }
-        }
-        Scanner scan = new Scanner(System.in);*/
+         if(args.length  > 0){
+         if(args[0].equalsIgnoreCase("F")){
+         cma = "F";
+         }
+         }
+         Scanner scan = new Scanner(System.in);*/
         String[][] infoArray = new String[5000][3];
         String[] array = new String[3];
 
@@ -43,16 +43,16 @@ public class Driver {
         //while(scan.hasNext()){
         int m = 0;
         //TEST IF EACH REF ADDRESS IS PROPERLY ALIGNED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        while(scan.hasNextLine()){
-            if(m == 0){
+        while (scan.hasNextLine()) {
+            if (m == 0) {
                 data2 = scan.nextLine();
                 returned = data2.split(":");
                 array[0] = returned[1];
-            } else if(m == 1){
+            } else if (m == 1) {
                 data2 = scan.nextLine();
                 returned = data2.split(":");
                 array[1] = returned[1];
-            } else if(m == 2){
+            } else if (m == 2) {
                 data2 = scan.nextLine();
                 returned = data2.split(":");
                 array[2] = returned[1];
@@ -85,11 +85,11 @@ public class Driver {
             //Used for print testing
             Cache cache = new Cache(infoArray, array[0], array[1], array[2]);
             /**Cache cache;
-            if(cma.equals("")) {
-                cache = new Cache(infoArray, array[0], array[1], array[2]);
-            } else {
-                cache = new Cache(infoArray, array[0], array[1], array[2], cma);
-            }*/
+             if(cma.equals("")) {
+             cache = new Cache(infoArray, array[0], array[1], array[2]);
+             } else {
+             cache = new Cache(infoArray, array[0], array[1], array[2], cma);
+             }*/
             cache.go();
         } catch (Exception e) {
             //ADD MESSAGE HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -100,37 +100,12 @@ public class Driver {
         }
     }
 
-    public static boolean isInteger(String str) {
-        if (str == null) {
-            return false;
-        }
-        int length = str.length();
-        if (length == 0) {
-            return false;
-        }
-        int i = 0;
-        if (str.charAt(0) == '-') {
-            if (length == 1) {
-                return false;
-            }
-            i = 1;
-        }
-        for (; i < length; i++) {
-            char c = str.charAt(i);
-            if (c < '0' || c > '9') {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
     public static void conditionChecking(String[] values){
         String[] check = values[0].split(" ");
         String check2 = check[1];
         int checking = Integer.parseInt(check2);
         if(checking > 5000){    //Making sure the number of sets isn't > 5000
-            System.out.println("Number of sets exceeds 8,000");
+            System.out.println("Number of sets exceeds 5,000");
             System.exit(1);
         }
         check = values[2].split(" ");
@@ -156,14 +131,5 @@ public class Driver {
             System.out.println("Line size is not a power of two!");
             System.exit(1);
         }
-    }
-
-    static boolean isPowerOfTwo(int n)
-    {
-        if(n==0)
-            return false;
-
-        return (int)(Math.ceil((Math.log(n) / Math.log(2)))) ==
-                (int)(Math.floor(((Math.log(n) / Math.log(2)))));
     }
 }

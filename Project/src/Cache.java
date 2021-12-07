@@ -273,7 +273,7 @@ public class Cache {
         }
         miss++;
         refer++;
-        //storing tag into access
+        //storing tag into memory locations
         memLocations[a] = tag;
         return val;
     }
