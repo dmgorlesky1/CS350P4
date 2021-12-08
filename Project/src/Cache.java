@@ -1,4 +1,5 @@
 import java.io.*;
+import java.sql.Array;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -42,7 +43,13 @@ public class Cache {
 
     private int[] memRef = new int[5000];
 
-    private ArrayList<ArrayList<Connection>> addressMap;
+
+    private ArrayList<ArrayList<Integer>> indexMap;
+
+    private ArrayList<ArrayList<Integer>>  tagMap;
+
+    private ArrayList<ArrayList<String>> addressMap;
+
 
     /** String array to hold any used addresses */
     public String[][] usedAddress = new String[10000][10000];
@@ -57,7 +64,25 @@ public class Cache {
         this.refer = 0;
         this.access = 0;
         this.param = "";
-        addressMap = new ArrayList<>(Integer.parseInt(this.numSet));
+        int num = Integer.parseInt(this.numSet);
+
+        indexMap = new ArrayList<ArrayList<Integer>>(num);
+        tagMap = new ArrayList<ArrayList<Integer>>(num);
+        addressMap = new ArrayList<ArrayList<String>>(num);
+
+        for(int i = 0; i < num; i++){
+            int j = 9000;
+            ArrayList<Integer> c = new ArrayList<>(num);
+            c.add(j);
+            ArrayList<Integer> d = new ArrayList<>(num);
+            d.add(j);
+            ArrayList<String> s = new ArrayList<>(num);
+            s.add("9999");
+
+            indexMap.add(c);
+            tagMap.add(d);
+            addressMap.add(s);
+        }
     }
 
     public Cache(String[][] info, String numSet, String setSize, String lineSize, String param){
@@ -125,7 +150,7 @@ public class Cache {
             //Get offset
             lineVal[4] = getOffsetLength(tag[2]);//Offset
             //Get hit or miss
-            result = getHitorMiss(tag[0]+"", index);
+            result = getHitorMiss(tag[0]+"", index, address);
             lineVal[5] = result; //Result
             //Get mem reference
             memRef = getMemRef(result, tag[0]+"", index);
@@ -247,8 +272,10 @@ public class Cache {
         return "write";
     }
 
-    public String getHitorMiss(String tag, String index){
+    public String getHitorMiss(String tag, String index, String address){
         index = index.replaceAll("\\s", "");
+        int ind = Integer.parseInt(index);
+        int tags = Integer.parseInt(tag);
         String val = "MISS";
         int a = 0;
         for(int i = 0; i < memLocations.length; i++){
@@ -261,6 +288,14 @@ public class Cache {
                         } else {
 
                         }
+                        int indexOf = tagMap.get(ind).indexOf(tags);
+                        indexMap.get(ind).remove(indexOf);
+                        tagMap.get(ind).remove(indexOf);
+                        addressMap.get(ind).remove(indexOf);
+
+                        indexMap.get(ind).add(ind);
+                        tagMap.get(ind).add(tags);
+                        addressMap.get(ind).add(address);
                         hit++;
                         return "HIT";
                     }
@@ -271,19 +306,32 @@ public class Cache {
         if(Integer.parseInt(setSize) == 1) {
             a = directMap(index);
         }
-
         miss++;
         //storing tag into memory locations
         memLocations[a][0] = tag;
         //storing index into memory locations
         memLocations[a][1] = index;
+        if(indexMap.get(ind).get(0) >= 9000){
+            indexMap.get(ind).add(0,ind);
+            indexMap.get(ind).remove(1);
 
-        int ind = Integer.parseInt(index);
-        int tags = Integer.parseInt(tag);
-        Connection conn = new Connection(tags, ind);
-        System.out.println(ind);
+            tagMap.get(ind).add(0,tags);
+            tagMap.get(ind).remove(1);
 
+            addressMap.get(ind).add(0, address);
+            addressMap.get(ind).remove(1);
+        } else {
+            if(indexMap.get(ind).contains(ind) && tagMap.get(ind).contains(tags)){
+                int indexOf = tagMap.get(ind).indexOf(tags);
+                indexMap.get(ind).remove(indexOf);
+                tagMap.get(ind).remove(indexOf);
+                addressMap.get(ind).remove(indexOf);
 
+            }
+            indexMap.get(ind).add(ind);
+            tagMap.get(ind).add(tags);
+            addressMap.get(ind).add(address);
+        }
         usedAddress[a][0] = tag;
         usedAddress[a][1] = index;
         return val;
@@ -317,7 +365,6 @@ public class Cache {
         if(setSize.equals("1")){
             return doDirect(index);
         }
-        boolean val = false;
         int cnt  = 0;
         for(int i = 0; i < usedAddress[0].length; i++){
             if(usedAddress[i][0] != null){
@@ -411,14 +458,22 @@ public class Cache {
     }
 
     public void printMap(){
-        System.out.println(addressMap.size());
-        for(int i = 0; i < addressMap.size(); i++){
-            System.out.println("set " + i);
-            for(int j = 0; j < addressMap.get(i).size(); j++){
-                    System.out.println("Tag: " + addressMap.get(i).get(j).getTag() + " Index: " + addressMap.get(i).get(j).getIndex());
-                    System.out.println("---------------");
+        String empty;
+        String total = "";
+        for(int i = 0; i < indexMap.size(); i++){
+            total += "set " + i + "\n";
+            for(int j = 0; j < indexMap.get(i).size(); j++){
+                if(addressMap.get(i).size() == 0){
+                    empty = "null";
+                } else if(addressMap.get(i).get(0).equals("9999")) {
+                    empty = "null";
+                } else {
+                    empty = "byte address " + addressMap.get(i).get(j) + ", tag " +
+                            tagMap.get(i).get(j) + ", lru";
+                }
+                total += "\tline " + j + " = " + empty + "\n";
             }
-            System.out.println("========Next Index===========");
         }
+        System.out.println(total);
     }
 }

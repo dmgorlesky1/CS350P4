@@ -1,11 +1,11 @@
-#Number of sets: 2
+#Number of sets: 64
 #Set size: 2
 #Line size: 8
-58:R:4
-68:R:4
-58:R:4
-68:R:4
-40:R:4
-c:R:4
-40:R:4
-48:R:4
+3d1:R:1
+3d4:R:1
+7d0:R:1
+3d5:R:1
+7d6:R:1
+fd4:R:1
+3d5:R:1
+7d0:R:1
