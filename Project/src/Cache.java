@@ -124,12 +124,12 @@ public class Cache {
         message += doWork();
         message += printSummary();
         System.out.println(printSummary());
-        //if(param.equals("F")){
+        if(param.equals("F")){
             message += finalState();
             System.out.println(finalState());
             message += printMap();
             System.out.println(printMap());
-        //}
+        }
         //Do something with message
         //print message or write to file?????????????????????
     }
@@ -305,17 +305,8 @@ public class Cache {
                         if(Integer.parseInt(setSize) == 1) {
                             a = directMap(index);
                             memRef[a] = 5;
-                        } else {
-
                         }
-                        int indexOf = tagMap.get(ind).indexOf(tags);
-                        indexMap.get(ind).remove(indexOf);
-                        tagMap.get(ind).remove(indexOf);
-                        addressMap.get(ind).remove(indexOf);
-
-                        indexMap.get(ind).add(ind);
-                        tagMap.get(ind).add(tags);
-                        addressMap.get(ind).add(address);
+                        updateMaps(tags, ind, address);
                         hit++;
                         return "HIT";
                     }
@@ -334,27 +325,33 @@ public class Cache {
         if(indexMap.get(ind).get(0) >= 9000){
             indexMap.get(ind).add(0,ind);
             indexMap.get(ind).remove(1);
-
             tagMap.get(ind).add(0,tags);
             tagMap.get(ind).remove(1);
-
             addressMap.get(ind).add(0, address);
             addressMap.get(ind).remove(1);
         } else {
-            if(indexMap.get(ind).contains(ind) && tagMap.get(ind).contains(tags)){
-                int indexOf = tagMap.get(ind).indexOf(tags);
-                indexMap.get(ind).remove(indexOf);
-                tagMap.get(ind).remove(indexOf);
-                addressMap.get(ind).remove(indexOf);
-
-            }
-            indexMap.get(ind).add(ind);
-            tagMap.get(ind).add(tags);
-            addressMap.get(ind).add(address);
+            updateMaps(tags, ind, address);
         }
         usedAddress[a][0] = tag;
         usedAddress[a][1] = index;
         return val;
+    }
+
+    public void updateMaps(int tags, int ind, String address){
+        if(tagMap.get(ind).contains(tags)){
+            int indexOf = tagMap.get(ind).indexOf(tags);
+            indexMap.get(ind).remove(indexOf);
+            tagMap.get(ind).remove(indexOf);
+            addressMap.get(ind).remove(indexOf);
+        }
+        indexMap.get(ind).add(ind);
+        tagMap.get(ind).add(tags);
+        addressMap.get(ind).add(address);
+        if(tagMap.get(ind).size() > Integer.parseInt(setSize)){
+            indexMap.get(ind).remove(0);
+            tagMap.get(ind).remove(0);
+            addressMap.get(ind).remove(0);
+        }
     }
 
     public int directMap(String index){
@@ -385,7 +382,6 @@ public class Cache {
         if(setSize.equals("1")){
             return doDirect(index);
         }
-        int cnt  = 0;
         for(int i = 0; i < usedAddress[0].length; i++){
             if(usedAddress[i][0] != null){
                 if(usedAddress[i][0].equals(tag) && usedAddress[i][1].equals(index)){
@@ -455,24 +451,24 @@ public class Cache {
     }
 
     public String printSummary(){
-        String val = "Simulation Summary Statistics\n";
+        String val = "\nSimulation Summary Statistics\n";
 
         int total = hit+miss;
         float hitRatio = (float) hit/total;
         float missRatio = (float) 1 - hitRatio;
 
-        val += "---------------------------------";
-        val += "\nTotal hits                    : " + this.hit;
-        val += "\nTotal misses                  : " + this.miss;
-        val += "\nTotal accesses                : " + (hit+miss);
-        val += "\nTotal memory references       : " + refer;
-        val += "\nHit ratio                     : " + hitRatio;
-        val += "\nMiss ratio                    : " + missRatio;
+        val += "-----------------------------";
+        val += "\nTotal hits                : " + this.hit;
+        val += "\nTotal misses              : " + this.miss;
+        val += "\nTotal accesses            : " + (hit+miss);
+        val += "\nTotal memory references   : " + refer;
+        val += "\nHit ratio                 : " + hitRatio;
+        val += "\nMiss ratio                : " + missRatio;
         return val;
     }
 
     public String finalState(){
-        String val = "\n\tFinal Data Cache State";
+        String val = "\n\n\tFinal Data Cache State";
         val += "\n-----------------------------";
         return val;
     }
@@ -480,6 +476,7 @@ public class Cache {
     public String printMap(){
         String empty;
         String total = "";
+        int size = Integer.parseInt(setSize);
         for(int i = 0; i < indexMap.size(); i++){
             total += "set " + i + "\n";
             for(int j = 0; j < indexMap.get(i).size(); j++){
@@ -492,6 +489,11 @@ public class Cache {
                             tagMap.get(i).get(j) + ", lru";
                 }
                 total += "\tline " + j + " = " + empty + "\n";
+                if(indexMap.get(i).size() < size){
+                    for(int k = indexMap.get(i).size(); k < size; k++){
+                        total += "\tline " + k + " = " + empty + "\n";
+                    }
+                }
             }
         }
         return total;
