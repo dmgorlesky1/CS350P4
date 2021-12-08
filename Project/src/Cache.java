@@ -40,8 +40,10 @@ public class Cache {
     /** Array to see if value was read or write */
     private String[][] memLocations = new String[5000][5000];
 
+    private int[] memRef = new int[5000];
+
     /** String array to hold any used addresses */
-    public String[] usedAddress = new String[10000];
+    public String[][] usedAddress = new String[10000][10000];
 
     public Cache(String[][] info, String numSet, String setSize, String lineSize){
         this.numSet = numSet.replaceAll("\\s", "");
@@ -107,7 +109,7 @@ public class Cache {
             lineVal[0] = " " + access;//Access
             address = info[i][0];
             bin = Integer.parseInt(address, 16); //turn into int
-            binary = Integer. toBinaryString(bin);//int into binary string
+            binary = Integer.toBinaryString(bin);//int into binary string
             lineVal[1] = " " + info[i][0]; //Address
             //Get tag
             tag = getTag(binary);
@@ -115,14 +117,14 @@ public class Cache {
             //Get index
             lineVal[3] = getIndexLength(tag[1]);//Index
             index = getIndexLength(tag[1]);//Index
+            index = index.replaceAll("\\s", "");
             //Get offset
             lineVal[4] = getOffsetLength(tag[2]);//Offset
             //Get hit or miss
             result = getHitorMiss(tag[0]+"", index);
             lineVal[5] = result; //Result
             //Get mem reference
-            newTag = "" + tag[0];
-            memRef = getMemRef(result, newTag);
+            memRef = getMemRef(result, tag[0]+"", index);
             lineVal[6] = "       " + memRef;
             data += buildLine(lineVal);
         }
@@ -243,67 +245,95 @@ public class Cache {
 
     public String getHitorMiss(String tag, String index){
         index = index.replaceAll("\\s", "");
-        /**System.out.println("Tag: " + tag);
-        System.out.println("Index: " + index);
-        System.out.println("----------");*/
         String val = "MISS";
         int a = 0;
         for(int i = 0; i < memLocations.length; i++){
             if(memLocations[i][0] != null){
                 if(memLocations[i][0].equals(tag)){
                     if(memLocations[i][1].equals(index)) {
-                        val = "HIT";//changing result
+                        if(Integer.parseInt(setSize) == 1) {
+                            a = directMap(index);
+                            memRef[a] = 5;
+                        } else {
+
+                        }
                         hit++;
-                        return val;
+                        return "HIT";
                     }
                 }
                 a++;
             }
         }
+        if(Integer.parseInt(setSize) == 1) {
+            a = directMap(index);
+        }
+
         miss++;
         //storing tag into memory locations
         memLocations[a][0] = tag;
         //storing index into memory locations
         memLocations[a][1] = index;
+
+        usedAddress[a][0] = tag;
+        usedAddress[a][1] = index;
         return val;
     }
 
-    public String getMemRef(String result, String tag){
+    public int directMap(String index){
+        for(int i = 0; i < memLocations.length; i++){
+            if(memLocations[i][1] != null) {
+                if (memLocations[i][1].equalsIgnoreCase(index)) {
+                    return i;
+                }
+            }
+        }
+        return 0;
+    }
+
+    public String getMemRef(String result, String tag, String index){
         String val = "1";
         if(result.equalsIgnoreCase("hit")){
-            val = "0";
+            return "0";
         }
-        if(accessedBefore(tag)){
-            val = "2";
+        if(accessedBefore(tag, index)){
+            refer += 2;
+            return "2";
         }
+        refer += 1;
         return val;
     }
 
-    public boolean accessedBefore(String tag){
+    public boolean accessedBefore(String tag, String index){
+        if(setSize.equals("1")){
+            return doDirect(index);
+        }
         boolean val = false;
-        int cnt = 0;
-        for(int i = 0; i < usedAddress.length; i++){
-            if(cnt == 2){
-                val = true;
-                deleteAddress(tag);
+        int cnt  = 0;
+        for(int i = 0; i < usedAddress[0].length; i++){
+            if(usedAddress[i][0] != null){
+                if(usedAddress[i][0].equals(tag) && usedAddress[i][1].equals(index)){
+                    if(memRef[i] > 0){
+                        return true;
+                    }
+                }
             }
-            if(usedAddress[i] != null){
-                if(usedAddress[i].equals(tag)){
-                    cnt++;
+        }
+        return false;
+    }
+
+    public boolean doDirect(String index){
+        boolean val = false;
+        int cnt  = 0;
+        for(int i = 0; i < usedAddress.length; i++){
+            if(usedAddress[i][1] != null){
+                if(usedAddress[i][1].equals(index)){
+                    if(memRef[i] > 0){
+                        return true;
+                    }
                 }
             }
         }
         return val;
-    }
-
-    public void deleteAddress(String tag){
-        for(int i = 0; i < usedAddress.length; i++){
-            if(usedAddress[i] != null){
-                if(usedAddress[i].equals(tag)){
-                    usedAddress[i] = null;
-                }
-            }
-        }
     }
 
     public String buildLine(String[] lineVal){
@@ -348,34 +378,18 @@ public class Cache {
     }
 
     public String printSummary(){
-        String val = "\nSimulation Summary Statistics\n";
+        String val = "Simulation Summary Statistics\n";
+
         int total = hit+miss;
-        String hitRatio2 = "", missRatio2 = "";
         float hitRatio = (float) hit/total;
-        DecimalFormat df = new DecimalFormat("#.000000");
-        String valueString = hitRatio+"";
-        int count = valueString.length();
-        if(count > 6){
-            hitRatio2 = df.format(hitRatio);
-            hitRatio2 = "0" + hitRatio2;
-        } else {
-            hitRatio2 = padRight(hitRatio2, 8);
-        }
         float missRatio = (float) 1 - hitRatio;
-        valueString = missRatio+"";
-        count = valueString.length();
-        if(count > 6){
-            missRatio2 = df.format(missRatio);
-            missRatio2 = "0" + missRatio2;
-        } else {
-            missRatio2 = padRight(missRatio2, 8);
-        }
+
         val += "---------------------------------";
         val += "\nTotal hits                     : " + this.hit;
         val += "\nTotal misses                   : " + this.miss;
         val += "\nTotal accesses                 : " + (hit+miss);
         val += "\nTotal memory references        : " + refer;
-        val += "\nHit ratio                      : " + hitRatio2;
+        val += "\nHit ratio                      : " + hitRatio;
         val += "\nMiss ratio                     : " + missRatio;
         return val;
     }
