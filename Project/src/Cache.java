@@ -42,6 +42,8 @@ public class Cache {
 
     private int[] memRef = new int[5000];
 
+    private ArrayList<ArrayList<Connection>> addressMap;
+
     /** String array to hold any used addresses */
     public String[][] usedAddress = new String[10000][10000];
 
@@ -55,6 +57,7 @@ public class Cache {
         this.refer = 0;
         this.access = 0;
         this.param = "";
+        addressMap = new ArrayList<>(Integer.parseInt(this.numSet));
     }
 
     public Cache(String[][] info, String numSet, String setSize, String lineSize, String param){
@@ -81,6 +84,7 @@ public class Cache {
             message += finalState();
             System.out.println(finalState());
         }
+        printMap();
         //Do something with message
         //print message or write to file?????????????????????
     }
@@ -274,6 +278,12 @@ public class Cache {
         //storing index into memory locations
         memLocations[a][1] = index;
 
+        int ind = Integer.parseInt(index);
+        int tags = Integer.parseInt(tag);
+        Connection conn = new Connection(tags, ind);
+        System.out.println(ind);
+
+
         usedAddress[a][0] = tag;
         usedAddress[a][1] = index;
         return val;
@@ -400,195 +410,15 @@ public class Cache {
         return val;
     }
 
-
-    /**
-     * A node of chains
-     * @param <K>
-     * @param <V>
-     */
-    class HashNode<K, V> {
-        K key;
-        V value;
-        final int hashCode;
-
-        // Reference to next node
-        HashNode<K, V> next;
-
-        // Constructor
-        public HashNode(K key, V value, int hashCode)
-        {
-            this.key = key;
-            this.value = value;
-            this.hashCode = hashCode;
-        }
-    }
-
-    /**
-     *
-     * @param <K>
-     * @param <V>
-     */
-    class Map<K, V> {
-        // bucketArray is used to store array of chains
-        private ArrayList<HashNode<K, V>> bucketArray;
-
-        // Current capacity of array list
-        private int numBuckets;
-
-        // Current size of array list
-        private int size;
-
-        // Constructor (Initializes capacity, size and
-        // empty chains.
-        public Map(int numBuckets) {
-            bucketArray = new ArrayList<>();
-            this.numBuckets = numBuckets;
-            size = 0;
-
-            // Create empty chains
-            for (int i = 0; i < numBuckets; i++)
-                bucketArray.add(null);
-        }
-
-        public int size() {
-            return size;
-        }
-
-        public boolean isEmpty() {
-            return size() == 0;
-        }
-
-        private final int hashCode(K key) {
-            return Objects.hashCode(key);
-        }
-
-        /**
-         * This implements hash function to find index for a key
-         * @param key Tag of address
-         * @return
-         */
-        private int getBucketIndex(K key) {
-            int hashCode = hashCode(key);
-            int index = hashCode % numBuckets;
-            // key.hashCode() coule be negative.
-            index = index < 0 ? index * -1 : index;
-            return index;
-        }
-
-        /**
-         * Method to remove a given key
-         * @param key Tag of address
-         * @return
-         */
-        public V remove(K key) {
-            // Apply hash function to find index for given key
-            int bucketIndex = getBucketIndex(key);
-            int hashCode = hashCode(key);
-            // Get head of chain
-            HashNode<K, V> head = bucketArray.get(bucketIndex);
-
-            // Search for key in its chain
-            HashNode<K, V> prev = null;
-            while (head != null) {
-                // If Key found
-                if (head.key.equals(key) && hashCode == head.hashCode)
-                    break;
-
-                // Else keep moving in chain
-                prev = head;
-                head = head.next;
+    public void printMap(){
+        System.out.println(addressMap.size());
+        for(int i = 0; i < addressMap.size(); i++){
+            System.out.println("set " + i);
+            for(int j = 0; j < addressMap.get(i).size(); j++){
+                    System.out.println("Tag: " + addressMap.get(i).get(j).getTag() + " Index: " + addressMap.get(i).get(j).getIndex());
+                    System.out.println("---------------");
             }
-
-            // If key was not there
-            if (head == null)
-                return null;
-
-            // Reduce size
-            size--;
-
-            // Remove key
-            if (prev != null)
-                prev.next = head.next;
-            else
-                bucketArray.set(bucketIndex, head.next);
-
-            return head.value;
-        }
-
-
-        /**
-         *
-         * @param key Tag of address
-         * @return Returns value for a key
-         */
-        public V get(K key) {
-            // Find head of chain for given key
-            int bucketIndex = getBucketIndex(key);
-            int hashCode = hashCode(key);
-
-            HashNode<K, V> head = bucketArray.get(bucketIndex);
-
-            // Search key in chain
-            while (head != null) {
-                if (head.key.equals(key) && head.hashCode == hashCode)
-                    return head.value;
-                head = head.next;
-            }
-
-            // If key not found
-            return null;
-        }
-
-        /**
-         * Adds a key value pair to hash
-         * @param key Tag of the address
-         * @param value offset of the address
-         */
-        public void add(K key, V value) {
-            // Find head of chain for given key
-            int a = (int) value;
-            //int bucketIndex = getBucketIndex(key);
-            int hashCode = hashCode(key);
-            //HashNode<K, V> head = bucketArray.get(bucketIndex);
-            HashNode<K, V> head = bucketArray.get(a);
-
-            // Check if key is already present
-            while (head != null) {
-                if (head.key.equals(key) && head.hashCode == hashCode) {
-                    head.value = value;
-                    return;
-                }
-                head = head.next;
-            }
-
-            // Insert key in chain
-            size++;
-            //head = bucketArray.get(bucketIndex);
-            head = bucketArray.get(a);
-            HashNode<K, V> newNode
-                    = new HashNode<K, V>(key, value, hashCode);
-            newNode.next = head;
-            //bucketArray.set(bucketIndex, newNode);
-            bucketArray.set(a, newNode);
-
-
-            // If load factor goes beyond threshold, then
-            // double hash table size
-            if ((1.0 * size) / numBuckets >= 0.7) {
-                ArrayList<HashNode<K, V>> temp = bucketArray;
-                bucketArray = new ArrayList<>();
-                numBuckets = 2 * numBuckets;
-                size = 0;
-                for (int i = 0; i < numBuckets; i++)
-                    bucketArray.add(null);
-
-                for (HashNode<K, V> headNode : temp) {
-                    while (headNode != null) {
-                        add(headNode.key, headNode.value);
-                        headNode = headNode.next;
-                    }
-                }
-            }
+            System.out.println("========Next Index===========");
         }
     }
 }
