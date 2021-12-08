@@ -95,6 +95,25 @@ public class Cache {
         this.refer = 0;
         this.access = 0;
         this.param = "F";
+        int num = Integer.parseInt(this.numSet);
+
+        indexMap = new ArrayList<ArrayList<Integer>>(num);
+        tagMap = new ArrayList<ArrayList<Integer>>(num);
+        addressMap = new ArrayList<ArrayList<String>>(num);
+
+        for(int i = 0; i < num; i++) {
+            int j = 9000;
+            ArrayList<Integer> c = new ArrayList<>(num);
+            c.add(j);
+            ArrayList<Integer> d = new ArrayList<>(num);
+            d.add(j);
+            ArrayList<String> s = new ArrayList<>(num);
+            s.add("9999");
+
+            indexMap.add(c);
+            tagMap.add(d);
+            addressMap.add(s);
+        }
     }
 
     public void go(){
@@ -105,11 +124,12 @@ public class Cache {
         message += doWork();
         message += printSummary();
         System.out.println(printSummary());
-        if(param.equals("F")){
+        //if(param.equals("F")){
             message += finalState();
             System.out.println(finalState());
-        }
-        printMap();
+            message += printMap();
+            System.out.println(printMap());
+        //}
         //Do something with message
         //print message or write to file?????????????????????
     }
@@ -452,21 +472,21 @@ public class Cache {
     }
 
     public String finalState(){
-        String val = "\n\n\tFinal Data Cache State";
-        val += "\n-----------------------------\n";
+        String val = "\n\tFinal Data Cache State";
+        val += "\n-----------------------------";
         return val;
     }
 
-    public void printMap(){
+    public String printMap(){
         String empty;
         String total = "";
         for(int i = 0; i < indexMap.size(); i++){
             total += "set " + i + "\n";
             for(int j = 0; j < indexMap.get(i).size(); j++){
                 if(addressMap.get(i).size() == 0){
-                    empty = "null";
+                    empty = "invalid";
                 } else if(addressMap.get(i).get(0).equals("9999")) {
-                    empty = "null";
+                    empty = "invalid";
                 } else {
                     empty = "byte address " + addressMap.get(i).get(j) + ", tag " +
                             tagMap.get(i).get(j) + ", lru";
@@ -474,6 +494,6 @@ public class Cache {
                 total += "\tline " + j + " = " + empty + "\n";
             }
         }
-        System.out.println(total);
+        return total;
     }
 }
