@@ -152,31 +152,30 @@ public class Cache {
         int[] tag;
         Line line;
         String[] lineVal = new String[8];
-        String access, address, binary, result, memRef = "";
+        String address, binary, result, offset, memRef = "";
         for(int i = 0; i < infoLen - 1; i++){
             line = new Line(numSet, lineSize);
-            access = line.accessName(info[i][1]);
-            lineVal[0] = " " + access;//Access
+            line.accessName(info[i][1]);
             address = info[i][0];
             bin = Integer.parseInt(address, 16); //turn into int
-            binary = Integer.toBinaryString(bin);//int into binary string
-            lineVal[1] = " " + info[i][0]; //Address
-            line.setAddress(lineVal[1]);
+            binary = Integer.toBinaryString(bin);//int into binary string\
+            line.setAddress(address);
             //Get tag
             tag = line.getTag(binary);
-            lineVal[2] = tag[0] + "";//Tag
+            line.setTag(tag[0] +"");
             //Get index
-            lineVal[3] = line.getIndexLength(tag[1]);//Index
             index = line.getIndexLength(tag[1]);//Index
             index = index.replaceAll("\\s", "");
+            line.setIndex(index);
             //Get offset
-            lineVal[4] = line.getOffsetLength(tag[2]);//Offset
+            offset = line.getOffsetLength(tag[2]);//Offset
+            line.setOffset(offset);
             //Get hit or miss
             result = getHitorMiss(tag[0]+"", index, address);
-            lineVal[5] = result; //Result
+            lineVal[0] = result; //Result
             //Get mem reference
             memRef = getMemRef(result, tag[0]+"", index);
-            lineVal[6] = "       " + memRef;
+            lineVal[1] = "       " + memRef;
             data += line.buildLine(lineVal);
         }
         System.out.println(data);

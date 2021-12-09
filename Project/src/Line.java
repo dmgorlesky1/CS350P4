@@ -5,7 +5,7 @@ public class Line {
     public String address;
     public String numSet;
     public String lineSize;
-
+    public String accessName;
 
     public Line(String numSet, String lineSize){
         this.address = "";
@@ -14,17 +14,28 @@ public class Line {
         this.offset = 0;
         this.numSet = numSet;
         this.lineSize = lineSize;
+        this.accessName = "";
     }
 
-    public String accessName(String value){
+    public void accessName(String value){
         if(value.equalsIgnoreCase("R")){
-            return "read";
+            this.accessName = "read";
+        } else {
+            this.accessName = "write";
         }
-        return "write";
+    }
+
+    public String getAccessName(){
+        return accessName;
     }
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public void setTag(String value){
+        value = value.replaceAll("\\s", "");
+        this.tag = Integer.parseInt(value);
     }
 
     public int[] getTag(String binary){
@@ -47,6 +58,11 @@ public class Line {
         String padded = String.format("%0"+(8- binaryValue.length())+"d%s", 0, binaryValue);
         values[0] = Integer.parseInt(padded, 2);//Padding and converting tag to int
         return values;
+    }
+
+    public void setIndex(String value){
+        value = value.replaceAll("\\s", "");
+        this.index = Integer.parseInt(value);
     }
 
     public int getIndex(){
@@ -131,18 +147,23 @@ public class Line {
         return val;
     }
 
+    public void setOffset(String value){
+        value = value.replaceAll("\\s", "");
+        offset = Integer.parseInt(value);
+    }
+
     public static String padLeft(String s, int n) {
         return String.format("%" + n + "s", s);
     }
 
     public String buildLine(String[] lineVal){
-        String line = padLeft(lineVal[0], 6);//Access
-        line += padLeft(lineVal[1], 8);//Address
-        line += padLeft(lineVal[2], 8);//Tag
-        line += padLeft(lineVal[3], 6);//Index
-        line += padLeft(lineVal[4], 7);//Offset
-        line += padLeft(lineVal[5], 7);//Result
-        line += padLeft(lineVal[6], 8);//Memref
+        String line = padLeft(accessName, 6);//Access
+        line += padLeft(address, 8);//Address
+        line += padLeft(tag+"", 8);//Tag
+        line += padLeft(index+"", 6);//Index
+        line += padLeft(offset+"", 7);//Offset
+        line += padLeft(lineVal[0], 7);//Result
+        line += padLeft(lineVal[1], 8);//Memref
         line += "\n";
         return line;
     }
