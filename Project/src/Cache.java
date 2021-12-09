@@ -7,7 +7,6 @@ import java.util.*;
  *
  */
 public class Cache {
-
     /** Set Size */
     private final String setSize;
 
@@ -24,7 +23,7 @@ public class Cache {
     private int miss;
 
     /** access array of data */
-    private String[][] info;
+    private final String[][] info;
 
     /** number of arrays in info */
     private int infoLen;
@@ -32,22 +31,30 @@ public class Cache {
     /** Parameter of program */
     private final String param;
 
-    /** Number of accesses */
-    private int access;
-
     /** Number of memory references */
     private int refer = 0;
 
     /** Array to see if value was read or write */
-    private String[][] memLocations = new String[5000][5000];
+    private final String[][] memLocations = new String[5000][5000];
 
+    /** Int array to keep track of memory references */
     private int[] memRef = new int[5000];
 
+    /** This was meant to imitiate a hash map with seperate chains  for the indexes*/
     private ArrayList<ArrayList<Integer>> indexMap;
 
+    /** This was meant to imitiate a hash map with seperate chains for the tags*/
     private ArrayList<ArrayList<Integer>>  tagMap;
 
+    /** This was meant to imitiate a hash map with seperate chains for the addresses*/
     private ArrayList<ArrayList<String>> addressMap;
+
+    /** This is meant to lower the amount of times I had to parse numSet to an integer*/
+    private final int numInt;
+
+    /** This is meant to lower the amount of times I had to parse setSize to an integer*/
+    private final int setInt;
+
 
 
     /** String array to hold any used addresses */
@@ -61,21 +68,21 @@ public class Cache {
         this.hit = 0;
         this.miss = 0;
         this.refer = 0;
-        this.access = 0;
         this.param = "";
-        int num = Integer.parseInt(this.numSet);
+        this.setInt = Integer.parseInt(this.setSize);
+        this.numInt = Integer.parseInt(this.numSet);
 
-        indexMap = new ArrayList<ArrayList<Integer>>(num);
-        tagMap = new ArrayList<ArrayList<Integer>>(num);
-        addressMap = new ArrayList<ArrayList<String>>(num);
+        indexMap = new ArrayList<ArrayList<Integer>>(numInt);
+        tagMap = new ArrayList<ArrayList<Integer>>(numInt);
+        addressMap = new ArrayList<ArrayList<String>>(numInt);
 
-        for(int i = 0; i < num; i++){
+        for(int i = 0; i < numInt; i++){
             int j = 9000;
-            ArrayList<Integer> c = new ArrayList<>(num);
+            ArrayList<Integer> c = new ArrayList<>(numInt);
             c.add(j);
-            ArrayList<Integer> d = new ArrayList<>(num);
+            ArrayList<Integer> d = new ArrayList<>(numInt);
             d.add(j);
-            ArrayList<String> s = new ArrayList<>(num);
+            ArrayList<String> s = new ArrayList<>(numInt);
             s.add("9999");
 
             indexMap.add(c);
@@ -92,21 +99,21 @@ public class Cache {
         this.hit = 0;
         this.miss = 0;
         this.refer = 0;
-        this.access = 0;
         this.param = "F";
-        int num = Integer.parseInt(this.numSet);
+        this.setInt = Integer.parseInt(this.setSize);
+        this.numInt = Integer.parseInt(this.numSet);
 
-        indexMap = new ArrayList<ArrayList<Integer>>(num);
-        tagMap = new ArrayList<ArrayList<Integer>>(num);
-        addressMap = new ArrayList<ArrayList<String>>(num);
+        indexMap = new ArrayList<>(numInt);
+        tagMap = new ArrayList<>(numInt);
+        addressMap = new ArrayList<>(numInt);
 
-        for(int i = 0; i < num; i++) {
+        for(int i = 0; i < numInt; i++){
             int j = 9000;
-            ArrayList<Integer> c = new ArrayList<>(num);
+            ArrayList<Integer> c = new ArrayList<>(numInt);
             c.add(j);
-            ArrayList<Integer> d = new ArrayList<>(num);
+            ArrayList<Integer> d = new ArrayList<>(numInt);
             d.add(j);
-            ArrayList<String> s = new ArrayList<>(num);
+            ArrayList<String> s = new ArrayList<>(numInt);
             s.add("9999");
 
             indexMap.add(c);
@@ -116,19 +123,18 @@ public class Cache {
     }
 
     public void go(){
-        String message = "";
         getInfoLength();
-        message = firstOutput(getCache());
+        String message = firstOutput(getCache());
         System.out.println(firstOutput(getCache()));
         message += doWork();
         message += printSummary();
         System.out.println(printSummary());
-        //if(param.equals("F")){
+        if(param.equals("F")){
             message += finalState();
             System.out.println(finalState());
             message += printMap();
             System.out.println(printMap());
-        //}
+        }
         //Do something with message
         //print message or write to file?????????????????????
     }
@@ -136,8 +142,8 @@ public class Cache {
 
     public void getInfoLength(){
         int cnt = 1;
-        for(int i = 0; i < info.length; i++){
-            if(info[i][0] != null){
+        for (String[] strings : info) {
+            if (strings[0] != null) {
                 cnt++;
             }
         }
@@ -147,12 +153,12 @@ public class Cache {
 
     public String doWork(){
         String data = "";
-        int bin = 0;
-        String index = "";
+        int bin;
+        String index;
         int[] tag;
         Line line;
         String[] lineVal = new String[8];
-        String address, binary, result, offset, memRef = "";
+        String address, binary, result, offset, memRef;
         for(int i = 0; i < infoLen - 1; i++){
             line = new Line(numSet, lineSize);
             line.accessName(info[i][1]);
@@ -188,23 +194,16 @@ public class Cache {
         int tags = Integer.parseInt(tag);
         String val = "MISS";
         int a = 0;
-        for(int i = 0; i < memLocations.length; i++){
-            if(memLocations[i][0] != null){
-                if(memLocations[i][0].equals(tag)){
-                    if(memLocations[i][1].equals(index)) {
-                        if(Integer.parseInt(setSize) == 1) {
-                            a = directMap(index);
-                            memRef[a] = 5;
-                        }
-                        updateMaps(tags, ind, address);
-                        hit++;
-                        return "HIT";
-                    }
-                }
-                a++;
+        if(tagMap.get(ind).contains(tags) && indexMap.get(ind).contains(ind)){
+            if(setInt == 1) {
+                a = directMap(index);
+                memRef[a] = 5;
             }
+            updateMaps(tags, ind, address);
+            hit++;
+            return "HIT";
         }
-        if(Integer.parseInt(setSize) == 1) {
+        if(setInt == 1) {
             a = directMap(index);
         }
         miss++;
@@ -237,7 +236,7 @@ public class Cache {
         indexMap.get(ind).add(ind);
         tagMap.get(ind).add(tags);
         addressMap.get(ind).add(address);
-        if(tagMap.get(ind).size() > Integer.parseInt(setSize)){
+        if(tagMap.get(ind).size() > setInt){
             indexMap.get(ind).remove(0);
             tagMap.get(ind).remove(0);
             addressMap.get(ind).remove(0);
@@ -285,7 +284,6 @@ public class Cache {
     }
 
     public boolean doDirect(String index){
-        boolean val = false;
         for(int i = 0; i < usedAddress.length; i++){
             if(usedAddress[i][1] != null){
                 if(usedAddress[i][1].equals(index)){
@@ -295,7 +293,7 @@ public class Cache {
                 }
             }
         }
-        return val;
+        return false;
     }
 
     public String firstOutput(String cache){
@@ -345,7 +343,7 @@ public class Cache {
     public String printMap(){
         String empty;
         String total = "";
-        int size = Integer.parseInt(setSize);
+        int size = setInt;
         for(int i = 0; i < indexMap.size(); i++){
             total += "set " + i + "\n";
             for(int j = 0; j < indexMap.get(i).size(); j++){
